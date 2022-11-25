@@ -1,0 +1,51 @@
+.calendar {
+    width: 900px;
+    height: 600px;
+  }
+  
+  .table-header {
+    height: auto;
+  }
+  
+  .weekday {
+    width: 100px;
+    text-align: center;
+  }
+  
+  .table-content {
+    box-sizing: border-box;
+  }
+  
+  .calendar-day {
+    width: 125px;
+    height: 75px;
+    position: relative;
+    border: 1px solid #a6a6a6;
+  }
+  
+  .calendar-day:hover {
+    background-color: #6b85e33e;
+  }
+  
+  .calendar-day p {
+    position: absolute;
+    right: 10px;
+    color: #a6a6a6;
+  }
+  
+  .current p {
+    color: #000000;
+  }
+  
+  .selected {
+    background-color: #6b85e3;
+  }
+
+  .addRDV {
+    background-color: #c73a41;
+  }
+
+  .selected p {
+    color: #fc0606;
+    font-weight: bold;
+  }
