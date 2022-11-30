@@ -49,3 +49,40 @@
     color: #fc0606;
     font-weight: bold;
   }
+
+  .titleForm {
+    font-size: 25px;
+    text-align: center;
+  }
+
+  .ulRDV {
+    width: fit-content;
+    margin: auto;
+  }
+
+  .form-box {
+    width: fit-content;
+    margin: auto;
+    text-align: center;
+  }
+
+  .formRdv {
+    width: fit-content;
+    margin: auto;
+  }
+
+  .form-box label {
+    font-size: 16px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .form-box input {
+    border-radius: 5px;
+    font-size: 20px;
+    text-align: center;
+  }
+
+  .formSubmit {
+    margin: 5px;
+  }

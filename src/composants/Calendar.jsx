@@ -1,6 +1,6 @@
-import {  useEffect, useReducer, useState } from "react";
+import { useEffect, useState } from "react";
 import './../css/Calendar.css'
-import {Button, ButtonToolbar} from 'react-bootstrap';
+import CalendarDays from "./CalendarDays";
 
 const currentDayAppLaunch = new Date();
 
@@ -26,47 +26,64 @@ const Calendar = () => {
       new Date( currentDay.getFullYear() - 1, 11, 1 ) : 
       new Date( currentDay.getFullYear(), currentDay.getMonth() - 1, 1 ) );
 
-
     const nextYear = () => setCurrentDay( new Date( currentDay.getFullYear() + 1, currentDay.getMonth(), currentDay.getDate() ) );
 
     const previousYear = () => setCurrentDay( new Date( currentDay.getFullYear() - 1, currentDay.getMonth(), currentDay.getDate() ) );
 
+    
+    const [showEvent, setShowEvent] = useState(false);
+    const [formActive, setFormActive] = useState(false);
+    
+    const [initialValues, setInitialValues] = useState({
+      titre: "",
+      commentaire: "",
+      dateRdv: ""
+    });
 
-    const firstDayOfMonth = new Date(currentDay.getFullYear(), currentDay.getMonth(), 1);
-    const weekdayOfFirstDay = firstDayOfMonth.getDay();
-    let currentDays = [];
+    const [formValues, setFormValues] = useState([]);
   
-    for (let day = 0; day < 42; day++) {
-      if (day === 0 && weekdayOfFirstDay === 0) {
-        firstDayOfMonth.setDate(firstDayOfMonth.getDate() - 7);
-      } else if (day === 0) {
-        firstDayOfMonth.setDate(firstDayOfMonth.getDate() + (day - weekdayOfFirstDay));
+    const submitForm = () => {
+      if(localStorage.getItem(initialValues.dateRdv)) {
+        const data = JSON.parse(localStorage.getItem(initialValues.dateRdv));
+        console.log(data);
+        const newData = JSON.stringify([...data, initialValues]) 
+        localStorage.setItem(initialValues.dateRdv, newData);
       } else {
-        firstDayOfMonth.setDate(firstDayOfMonth.getDate() + 1);
+        setFormValues((prevFormValues) => [...prevFormValues, initialValues]);
       }
-  
-      let calendarDay = {
-        currentMonth: (firstDayOfMonth.getMonth() === currentDay.getMonth()),
-        date: (new Date(firstDayOfMonth)),
-        month: firstDayOfMonth.getMonth(),
-        number: firstDayOfMonth.getDate(),
-        selected: (firstDayOfMonth.toDateString() === currentDay.toDateString()),
-        year: firstDayOfMonth.getFullYear()
-      }
-  
-      currentDays.push(calendarDay);
-    }
-
-
-
-    const [isActive, setIsActive] = useState(false);
-
-    const handleClick = () => {
-      // 👇️ toggle
-      setIsActive(current => !current);
-  
-      // setIsActive(true);
+      setFormActive(false);
+      setInitialValues({
+        titre: "",
+        commentaire: "",
+        dateRdv: ""
+      });
     };
+
+    useEffect(() => {
+      if(formValues.length) {
+        localStorage.setItem(formValues[0].dateRdv, JSON.stringify(formValues));
+        setFormValues([]);
+      }
+    }, [formValues]);
+
+    useEffect(() => {
+      if(formActive) {
+        setInitialValues({ ...initialValues, dateRdv: currentDay.getFullYear() + "-" + (currentDay.getMonth()+1) + "-" + currentDay.getDate() });
+      }
+    }, [currentDay]);
+    
+    const [isRDV, setIsRDV] = useState(false);
+    const events = () => {
+        console.log(currentDay)
+        
+        let data = [];
+        let date = currentDay.getFullYear() + "-" + (currentDay.getMonth()+1) + "-" + currentDay.getDate(); 
+        if(localStorage.getItem(date)) {
+          data = JSON.parse(localStorage.getItem(date));
+        }
+
+        return(data)
+    }
 
     return (
         <div className="calendar d-flex flex-column my-3 m-auto">
@@ -140,23 +157,76 @@ const Calendar = () => {
               }
             </div>
 
-            <div className="my-3 table-content w-100 flex-grow-1 d-flex flex-wrap justify-content-center">
-              { currentDays.map((day) => {
-                  return (
-                  <div className={"calendar-day" + (day.currentMonth ? " current" : "") + 
-                    ( (day.month === currentDayAppLaunch.getMonth()) && 
-                      (day.year === currentDayAppLaunch.getFullYear()) && 
-                      (day.number === currentDayAppLaunch.getDate()) ? " selected" : "") +
-                    ( (isActive) ? " addRDV" : "") }
-                          onClick={() => changeCurrentDay(day)}>
-                      <p>{day.number}</p>
-                  </div>
-                  )
-              }) }
-            </div>
-            
-          </div>
+              <CalendarDays day={currentDay} currentDayAppLaunch={currentDayAppLaunch} 
+                changeCurrentDay={changeCurrentDay} setShowEvent={setShowEvent} setIsRDV={setIsRDV} />
 
+            {showEvent &&
+              <div className="my-3">
+                <div className="d-flex justify-content-evenly">
+                  <h3>Liste des RDV du : {currentDay.getDate()} {monthsNames[currentDay.getMonth()]} - {currentDay.getFullYear()}</h3>
+                  <button onClick={() => setShowEvent(false)}>Cacher RDV</button>
+                </div>
+                <ul className="ulRDV">
+                  { isRDV ?
+                    events().map((event) => {
+                      return (
+                        <li>titre : {event.titre}, commentaire : {event.commentaire}, dateRdv : {event.dateRdv}</li>
+                      )
+                    }) : <p>Pas de RDV pour le moment.</p>
+                  }
+                </ul>
+
+              </div>
+            }
+
+            <div className="m-auto">
+              <button onClick={() => {
+                                setFormActive(!formActive);
+                                setInitialValues({ ...initialValues, dateRdv: currentDay.getFullYear() + "-" + (currentDay.getMonth()+1) + "-" + currentDay.getDate() }); 
+                              }}>
+              Ajouter un rdv
+              </button>
+            </div>
+ 
+            {formActive &&
+            <div className="form-box">
+
+              <h5 className="titleForm">Formulaire RDV :</h5>
+              <form className="formRdv" onSubmit={submitForm}>
+
+                <div className="divFormLabel">
+                  <label>
+                    Titre :
+                    <input type="text" required value={initialValues.titre}
+                        onChange={(e) =>
+                          setInitialValues({ ...initialValues, titre: e.target.value })
+                        } />
+                  </label>
+                  
+                  <label>
+                    Commentaire :
+                    <input type="text" value={initialValues.commentaire}
+                      onChange={(e) =>
+                        setInitialValues({ ...initialValues, commentaire: e.target.value })
+                      } />
+                  </label>
+                  
+                  <label>
+                    Date :
+                    <input type="date" required value={initialValues.dateRdv}
+                      onChange={(e) =>
+                        setInitialValues({ ...initialValues, dateRdv: e.target.value })
+                      } />
+                  </label>
+                </div>
+
+                <input className="formSubmit" type="submit" value="Sauvegarder" />
+              
+              </form>
+
+            </div>}
+
+          </div>
         </div>
 
       )

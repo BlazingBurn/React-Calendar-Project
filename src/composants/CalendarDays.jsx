@@ -25,12 +25,21 @@ function CalendarDays(props) {
     }
   
     return (
-      <div className="table-content">
+      <div className="my-3 table-content w-100 flex-grow-1 d-flex flex-wrap justify-content-center">
         {
-          currentDays.map((day) => {
+          currentDays.map((day, index) => {
             return (
-              <div className={"calendar-day" + (day.currentMonth ? " current" : "") + (day.selected ? " selected" : "")}
-                    onClick={() => props.changeCurrentDay(day)}>
+              // <div key={index} className={"calendar-day" + (day.currentMonth ? " current" : "") + (day.selected ? " selected" : "")}
+              //       onClick={() => props.changeCurrentDay(day)}>
+              <div key={index} className={"calendar-day" + (day.currentMonth ? " current" : "") + 
+                    ( (day.month === props.currentDayAppLaunch.getMonth()) && 
+                      (day.year === props.currentDayAppLaunch.getFullYear()) && 
+                      (day.number === props.currentDayAppLaunch.getDate()) ? " selected" : 
+                        (localStorage.getItem(day.year + "-" + (day.month+1) + "-" + day.number)) ? " addRDV" : "") }
+                          onClick={() => {props.changeCurrentDay(day);
+                                          props.setShowEvent(true);
+                                          props.setIsRDV(localStorage.getItem(day.year + "-" + (day.month+1) + "-" + day.number))
+                                          }}>
                 <p>{day.number}</p>
               </div>
             )
